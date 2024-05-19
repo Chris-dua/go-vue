@@ -3,8 +3,7 @@
 </script>
 
 <template>
-  <div>首页 <a-button>点我</a-button></div>
-
+  <div>系统日志</div>
 </template>
 
 <style scoped>
