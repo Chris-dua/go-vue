@@ -13,7 +13,7 @@
       </div>
       <div class="action_search">
         <a-input-search
-            placeholder="搜索用户名、昵称"
+            :placeholder="searchPlaceholder"
             v-model="params.key" @keydown.enter="searchEvent"
             @search="searchEvent"></a-input-search>
       </div>
@@ -33,47 +33,52 @@
         </a-button>
       </div>
     </div>
-    <div class="gvb_table_data">
-        <div class="gvb_table_source">
-          <a-table :row-key=rowKey :columns="props.columns" :data="data.list"
-                   :row-selection="props.noCheck ? undefined : rowSelection"
-                   v-model:selectedKeys="selectedKeys" :pagination="false">
-            <template #columns>
-              <template v-for="item in props.columns">
-                <a-table-column v-if="item.render" :title="item.title as string">
-                  <template #cell="data">
-                    <component :is="item.render(data) as Component"></component>/
-                  </template>
-                </a-table-column>
-                <a-table-column v-else-if="!item.slotName" :title="item.title as string"
-                                :data-index="item.dataIndex"></a-table-column>
-                <a-table-column :title="item.title as string" v-else>
-                  <template #cell="{record}" v-if="item.slotName==='action'">
-                    <div class="gvb_cell_actions">
-                      <a-button type="primary" @click="edit(record)">编辑</a-button>
-                      <a-popconfirm v-if="!props.noDelete" content="是否确认删除?" @ok="remove(record)">
-                      <a-button status="danger" type="primary">删除</a-button>
-                      </a-popconfirm>
-                    </div>
-                  </template>
-                  <template #cell="{record}" v-else-if="item.slotName === 'create_at'">
-                    <span>{{dataTimeFormat(record.create_at) }}</span>
-                  </template>
-                  <template v-else #cell="{record}">
-                    <slot :name="item.slotName" :record="record"></slot>
-                  </template>
-                </a-table-column>
+      <a-spin class="gvb_table_data" :loading="isLoading" tip="加载中">
+        <div>
+          <div class="gvb_table_source">
+            <a-table :row-key=rowKey :columns="props.columns" :data="data.list"
+                     :row-selection="props.noCheck ? undefined : rowSelection"
+                     v-model:selectedKeys="selectedKeys" :pagination="false">
+              <template #columns>
+                <template v-for="item in props.columns">
+                  <a-table-column v-if="item.render" :title="item.title as string">
+                    <template #cell="data">
+                      <component :is="item.render(data) as Component"></component>/
+                    </template>
+                  </a-table-column>
+                  <a-table-column v-else-if="!item.slotName" :title="item.title as string"
+                                  :data-index="item.dataIndex"></a-table-column>
+                  <a-table-column :title="item.title as string" v-else>
+                    <template #cell="{record}" v-if="item.slotName==='action'">
+                      <div class="gvb_cell_actions">
+                        <slot name="action_left" :record="record"> </slot>
+                        <a-button v-if="!props.noEdit" type="primary" @click="edit(record)">编辑</a-button>
+                        <slot name="action_middle" :record="record"> </slot>
+                        <a-popconfirm v-if="!props.noDelete" content="是否确认删除?" @ok="remove(record)">
+                          <a-button status="danger" type="primary">删除</a-button>
+                        </a-popconfirm>
+                        <slot name="action_right" :record="record"> </slot>
+                      </div>
+                    </template>
+                    <template #cell="{record}" v-else-if="item.slotName === 'create_at'">
+                      <span>{{dataTimeFormat(record.create_at) }}</span>
+                    </template>
+                    <template v-else #cell="{record}">
+                      <slot :name="item.slotName" :record="record"></slot>
+                    </template>
+                  </a-table-column>
+                </template>
               </template>
-            </template>
-          </a-table>
+            </a-table>
 
 
+          </div>
+          <div class="gvb_table_page">
+            <a-pagination :total="data.count" @change="pageChange" v-model:current="params.page" :default-page-size="params.limit" show-total show-jumper/>
+          </div>
         </div>
-        <div class="gvb_table_page">
-          <a-pagination :total="data.count" @change="pageChange" v-model:current="params.page" :default-page-size="params.limit" show-total show-jumper/>
-      </div>
+      </a-spin>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -121,7 +126,7 @@ interface Props {
   noEdit?: boolean // 没有编辑
   noDelete?: boolean // 没有单独的删除
   searchPlaceholder?: string // 模糊匹配的提示词
-  // defaultParams?: paramsType & any //第一次查询的查询参数
+  defaultParams?: userListParamsType & any //第一次查询的查询参数
 }
 const data = reactive<listDataType<any>>({
   list: [],
@@ -140,16 +145,27 @@ const params = reactive(<userListParamsType>{
   limit:limit,
   key:""
 })
+const isLoading = ref(false)
+
 async function getList(p?:userListParamsType & any){
   if (p){
-    Object.assign(params,p)
+    Object.assign(params, p)
   }
+  isLoading.value = true
   let res = await props.url(params)
+  console.log(res.data)
+  isLoading.value = false
   data.list = res.data.list
   data.count = res.data.count
+
+
 }
 
-getList()
+getList(props.defaultParams)
+
+defineExpose({
+  getList
+})
 
 function pageChange() {
   getList()
@@ -174,8 +190,16 @@ const rowSelection = reactive<TableRowSelection>(
       onlyCurrent: false,
     }
 )
+export type RecodeType <T>=T&{
 
-const emits = defineEmits(["add", "edit", "remove"])
+}
+
+// const emits = defineEmits(["add", "edit", "remove"])
+const emits = defineEmits<{
+  (e:"add"): void
+  (e:"edit", record:RecodeType<any>):void
+  (e:"remove", idList:(number|string)[]):void
+}>()
 
 
 
@@ -229,7 +253,7 @@ function actionMethod(){
 
 const urlRegex = /return useAxios.get\("(.*?)", .*?\)/
 
-async function remove(record: TableData){
+async function remove(record: RecodeType<any>){
   let id = record[rowKey]
   removeIdData([id])
 }
@@ -296,7 +320,7 @@ function add(){
   emits("add")
 }
 
-function edit(record: TableData){
+function edit(record: RecodeType<any>){
   console.log(record.avatar_id)
   emits("edit",record)
 }
@@ -345,6 +369,7 @@ function edit(record: TableData){
     }
   }
   .gvb_table_data{
+    width: 100%;
     padding: 10px 20px 20px 20px;
     .gvb_table_source{
       .gvb_cell_actions{
