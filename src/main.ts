@@ -6,6 +6,7 @@ import ArcoVue from '@arco-design/web-vue';
 import '@arco-design/web-vue/dist/arco.css';
 import App from './App.vue'
 import router from './router'
+import "font-awesome/css/font-awesome.min.css"
 
 const app = createApp(App)
 app.use(ArcoVue)

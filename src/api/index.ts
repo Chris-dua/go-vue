@@ -17,7 +17,7 @@ export interface baseResponse<T> {
     msg: string
 }
 
-export interface userListParamsType{
+export interface listParamsType {
     page?: number
     limit?: number
     key?: string
@@ -52,6 +52,6 @@ export function defaultDeleteApi<T extends number | string>(url:string, idList:T
     })
 }
 
-export function defaultOptionApi(url:string, params?:userListParamsType):Promise<baseResponse<optionType[]>>{
+export function defaultOptionApi(url:string, params?:listParamsType):Promise<baseResponse<optionType[]>>{
     return useAxios.post(url, {params})
 }

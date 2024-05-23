@@ -15,6 +15,7 @@
        </span>
       </swiper-slide>
     </swiper>
+
     <span @click="closeAllTab" class="gvb_tab close_all_tab">全部关闭
     <IconClose></IconClose>
     </span>

@@ -8,8 +8,9 @@
         <a-select placeholder="操作" style="width: 120px;" allow-clear
                   :options="actionOptions" v-model="actionValue"></a-select>
         <a-popconfirm content="是否确认执行此操作?" v-if="!props.noConfirm" @ok="actionMethod">
-        <a-button type="primary" status="danger" v-if="actionValue !== undefined">执行</a-button>
+        <a-button type="primary" status="danger" v-if="actionValue !== undefined && actionValue !== ''">执行</a-button>
         </a-popconfirm>
+        <a-button v-else type="primary" status="danger" v-if="actionValue !== undefined && actionValue !== ''" @click="actionMethod">执行</a-button>
       </div>
       <div class="action_search">
         <a-input-search
@@ -43,7 +44,7 @@
                 <template v-for="item in props.columns">
                   <a-table-column v-if="item.render" :title="item.title as string">
                     <template #cell="data">
-                      <component :is="item.render(data) as Component"></component>/
+                      <component :is="item.render(data) as Component"></component>
                     </template>
                   </a-table-column>
                   <a-table-column v-else-if="!item.slotName" :title="item.title as string"
@@ -83,7 +84,7 @@
 
 <script setup lang="ts">
 import {IconRefresh} from "@arco-design/web-vue/es/icon";
-import {type baseResponse, defaultDeleteApi, type userListParamsType} from "@/api";
+import {type baseResponse, defaultDeleteApi, type listParamsType} from "@/api";
 import type{listDataType} from "@/api"
 import type {userInfoType} from "@/api/user_api";
 import {type Component, onErrorCaptured, reactive, ref} from "vue";
@@ -99,7 +100,7 @@ export interface actionOptionType{
   callback?: (idList: (number|string)[]) => Promise<boolean>
 }
 
-type filterFunc = (params?: userListParamsType) => Promise<baseResponse<optionType[]>>
+type filterFunc = (params?: listParamsType) => Promise<baseResponse<optionType[]>>
 export interface filterOptionType {
   label: string
   value?: number
@@ -111,7 +112,7 @@ export interface filterOptionType {
 const props = defineProps<Props>()
 
 interface Props {
-  url: (params: userListParamsType) => Promise<baseResponse<listDataType<any>>> // 请求列表数据的api函数
+  url: (params: listParamsType) => Promise<baseResponse<listDataType<any>>> // 请求列表数据的api函数
   columns: TableColumnData[] // 字段
   limit?: number // 显示多少条，默认10条
   rowKey?: string // 选中的时候，按照什么选，默认是id
@@ -126,7 +127,8 @@ interface Props {
   noEdit?: boolean // 没有编辑
   noDelete?: boolean // 没有单独的删除
   searchPlaceholder?: string // 模糊匹配的提示词
-  defaultParams?: userListParamsType & any //第一次查询的查询参数
+  defaultParams?: listParamsType & any //第一次查询的查询参数
+  noPage?:boolean
 }
 const data = reactive<listDataType<any>>({
   list: [],
@@ -140,20 +142,19 @@ const {
   searchPlaceholder = "搜索"
 } = props
 
-const params = reactive(<userListParamsType>{
+const params = reactive(<listParamsType>{
   page:1,
   limit:limit,
   key:""
 })
 const isLoading = ref(false)
 
-async function getList(p?:userListParamsType & any){
+async function getList(p?:listParamsType & any){
   if (p){
     Object.assign(params, p)
   }
   isLoading.value = true
   let res = await props.url(params)
-  console.log(res.data)
   isLoading.value = false
   data.list = res.data.list
   data.count = res.data.count
@@ -227,9 +228,12 @@ function initActionGroup() {
 
 initActionGroup()
 
-const actionValue = ref<number | undefined>(undefined)
+const actionValue = ref<number | undefined | "">(undefined)
 
 function actionMethod(){
+  if(actionValue.value === undefined){
+    return;
+  }
   if(actionValue.value === 0){
     if(selectedKeys.value.length === 0){
       Message.warning("请选择要删除的记录")
@@ -270,6 +274,7 @@ async function removeIdData(idList: (number|string)[]){
       return
     }
     Message.success(res.msg)
+    selectedKeys.value = []
     getList()
     return
   }
@@ -321,7 +326,6 @@ function add(){
 }
 
 function edit(record: RecodeType<any>){
-  console.log(record.avatar_id)
   emits("edit",record)
 }
 

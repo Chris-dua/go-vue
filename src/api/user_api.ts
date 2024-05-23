@@ -1,4 +1,4 @@
-import type { baseResponse, userListParamsType, listDataType} from "@/api/index";
+import type { baseResponse, listParamsType, listDataType} from "@/api/index";
 import {useAxios} from "@/api/index";
 import dayjs from "dayjs";
 
@@ -35,7 +35,7 @@ export function userInfoApi(): Promise<baseResponse<userInfoType>> {
     return useAxios.get("/api/user_info")
 }
 
-export function userListApi(params: userListParamsType):Promise<baseResponse<listDataType<userInfoType>>>{
+export function userListApi(params: listParamsType):Promise<baseResponse<listDataType<userInfoType>>>{
     return useAxios.get("/api/users", {params})
 }
 

@@ -61,6 +61,7 @@ const menuList: MenuType[] = [
   {
     title: "文章管理", icon: IconUser, name: "article", child: [
       {title: "文章列表", icon: IconUser, name: "article_list"},
+      {title: "图片列表", icon: IconUser, name: "image_list"},
     ]
   },
   {
@@ -77,6 +78,8 @@ const menuList: MenuType[] = [
     title: "系统管理", icon: IconUser, name: "system", child: [
       {title: "菜单列表", icon: IconUser, name: "menu_list"},
       {title: "系统日志", icon: IconUser, name: "log_list"},
+      {title: "系统配置", icon: IconUser, name: "system_system"},
+
     ]
   },
 

@@ -74,6 +74,15 @@ const router = createRouter({
               },
 
               component: () => import('../views/admin/article/article_list.vue'),
+            },
+            {
+              path: "image_list",
+              name: "image_list",
+              meta:{
+                title: '图片列表',
+              },
+
+              component: () => import('../views/admin/article/image_list.vue'),
             }
           ]
         },
@@ -139,6 +148,57 @@ const router = createRouter({
                 title: '系统日志',
               },
               component: () => import('../views/admin/system/log_list.vue'),
+            },
+            {
+              path: "system",
+              name: "system_system",
+              meta:{
+                title: '系统配置',
+              },
+              redirect:"/admin/system/system/site",
+              component: () => import('../views/admin/system/system.vue'),
+              children: [
+                {
+                  path: "site",
+                  name: "site_config",
+                  meta: {
+                    title: "网站设置"
+                  },
+                  component: () => import('../views/admin/system/config/site_config.vue'),
+                },
+                {
+                  path: "email",
+                  name: "email_config",
+                  meta: {
+                    title: "邮箱设置"
+                  },
+                  component: () => import('../views/admin/system/config/email_config.vue'),
+                },
+                {
+                  path: "qiniu",
+                  name: "qiniu_config",
+                  meta: {
+                    title: "七牛设置"
+                  },
+                  component: () => import('../views/admin/system/config/qiniu_config.vue'),
+                },
+                {
+                  path: "qq",
+                  name: "qq_config",
+                  meta: {
+                    title: "QQ设置"
+                  },
+                  component: () => import('../views/admin/system/config/qq_config.vue'),
+                },
+                {
+                  path: "jwt",
+                  name: "jwt_config",
+                  meta: {
+                    title: "jwt设置"
+                  },
+                  component: () => import('../views/admin/system/config/jwt_config.vue'),
+                }
+              ]
             },
 
           ]

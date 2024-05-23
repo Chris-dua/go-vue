@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a-modal title="创建用户" v-model:visible="props.visible" :on-before-ok="createUser">
+    <a-modal title="创建用户" v-model:visible="props.visible" :on-before-ok="createUser" @cancel="emits('update:visible', false)">
       <a-form ref="formRef" :model="form">
         <a-form-item field="user_name" label="用户名"
                      :rules="[{required:true,message:'请输入用户名'}]"
